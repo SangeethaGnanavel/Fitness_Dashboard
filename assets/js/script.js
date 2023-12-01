@@ -117,12 +117,85 @@ $(document).ready(function () {
       $("#duration").val("");
     }
   }
-  function getFoodInfo(food, amount, measure) {}
+  function getFoodInfo(food, amount, measure) {
+    let APIKey = "b5e2ab46de743f89705388baac3abb12";
+    let APIId = "b84dedab";
+
+    // Fetch for food info
+    let requestUrl =
+      "https://api.edamam.com/api/nutrition-data?app_id=" +
+      APIId +
+      "&app_key=" +
+      APIKey +
+      "&nutrition-type=cooking&ingr=" +
+      amount +
+      "%20" +
+      measure +
+      "%20" +
+      food;
+
+    fetch(requestUrl)
+      .then(function (response) {
+        if (response.ok) {
+          response.json().then(function (data) {
+            displayFoodResult(data, food, amount, measure);
+            saveFoodInfo(food, amount, measure);
+          });
+        } else {
+          alertEl.textContent = "Error: " + response.statusText;
+          modal.style.display = "block";
+        }
+      })
+      .catch(function (error) {
+        alertEl.textContent = "Unable to connect to the server";
+        modal.style.display = "block";
+      });
+  }
   function saveFoodInfo(food, amount, measure) {}
   // Fetch data for TDEE search
-  function getTDEE(weight, height, age, gender, activityLevel) {}
+  function getTDEE(weight, height, age, gender, activityLevel) {
+    // Fetch for TDEE
+    let XRapidAPIKey = "1cad2c1280mshd2a5acc41eef7ebp10ec4djsnf30acec351ba";
+    let XRapidAPIHost = "mega-fitness-calculator1.p.rapidapi.com";
+    let url =
+      "https://mega-fitness-calculator1.p.rapidapi.com/tdee?weight=" +
+      weight +
+      "&height=" +
+      height +
+      "&activitylevel=" +
+      activityLevel +
+      "&age=" +
+      age +
+      "&gender=" +
+      gender;
+
+    let options = {
+      method: "GET",
+      headers: {
+        "X-RapidAPI-Key": XRapidAPIKey,
+        "X-RapidAPI-Host": XRapidAPIHost,
+      },
+    };
+    fetch(url, options).then(function (response) {
+      if (response.ok) {
+        response.json().then(function (data) {
+          displayTDEEResult(data, weight, height, age, gender, activityLevel);
+        });
+      }
+    });
+  }
   // Fetch data for activity search
-  function getActivityInfo(activityText, duration) {}
+  function getActivityInfo(activityText, duration) {
+    let APIKey = "WtIp1I8eoOwneW7Y533fWIk78SoMiG6rEKqV9OJR";
+    baseUrl = "https://api.api-ninjas.com/v1/caloriesburned?activity=";
+    return fetch(baseUrl + activityText + "&duration=" + duration, {
+      headers: { "x-api-key": APIKey },
+    }).then((response) =>
+      response.json().then(function (data) {
+        displayActivityResult(data, activityText, duration);
+      })
+    );
+  }
 
   // Display the search result for Nutrients Info
   function displayFoodResult(data, food, amount, measure) {}
