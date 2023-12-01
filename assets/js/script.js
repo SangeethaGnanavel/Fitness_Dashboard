@@ -59,9 +59,8 @@ $(document).ready(function () {
     if (!foodText || !amount || !measureEl) {
       alertEl.textContent = "Please fill all mandatory fields!";
       modal.style.display = "block";
-      //   foodResultsEl.removeChild(foodResultsEl.firstChild);
-    }
-    if (isNaN(amount)) {
+      return;
+    } else if (isNaN(amount)) {
       alertEl.textContent = "Please enter a number!";
       modal.style.display = "block";
     } else {
@@ -86,7 +85,7 @@ $(document).ready(function () {
     if (!weight || !height || !age || !gender || !activityLevel) {
       alertEl.textContent = "Please fill all mandatory fields!";
       modal.style.display = "block";
-      //   tdeeResultsEl.removeChild(foodResultsEl.firstChild);
+      return;
     } else if (isNaN(weight) || isNaN(height) || isNaN(age)) {
       alertEl.textContent = "Please enter a number!";
       modal.style.display = "block";
@@ -151,7 +150,32 @@ $(document).ready(function () {
         modal.style.display = "block";
       });
   }
-  function saveFoodInfo(food, amount, measure) {}
+  function saveFoodInfo(food, amount, measure) {
+    let foodObject = {
+      foodName: food,
+      quantity: amount,
+      measurementUnit: measure,
+    };
+
+    let savedFoods = JSON.parse(localStorage.getItem("foodObject")) || [];
+    if (savedFoods.length >= 10) {
+      savedFoods.shift();
+    }
+
+    // check for exisiting
+    let itemExists = savedFoods.some(
+      (savedFood) =>
+        savedFood.foodName.toUpperCase() ===
+          foodObject.foodName.toUpperCase() &&
+        savedFood.quantity == foodObject.quantity &&
+        savedFood.measurementUnit === foodObject.measurementUnit
+    );
+
+    if (!itemExists) {
+      savedFoods.push(foodObject);
+      localStorage.setItem("foodObject", JSON.stringify(savedFoods));
+    }
+  }
   // Fetch data for TDEE search
   function getTDEE(weight, height, age, gender, activityLevel) {
     // Fetch for TDEE
@@ -460,7 +484,37 @@ $(document).ready(function () {
     activityResultsEl.appendChild(avtivityInfoList);
   }
   // Display saved searches for food
-  function getFoodHistory() {}
+  function getFoodHistory() {
+    let savedFoods = JSON.parse(localStorage.getItem("foodObject")) || [];
+    if (savedFoods.length >= 10) {
+      savedFoods.shift();
+    }
+
+    while (foodResultsEl.firstChild) {
+      foodResultsEl.removeChild(foodResultsEl.firstChild);
+    }
+    foodResultsEl.classList.remove("hidden");
+
+    for (let i = 0; i < savedFoods.length; i++) {
+      let historyItem = document.createElement("button");
+      historyItem.textContent = `${savedFoods[i].foodName}, ${savedFoods[i].quantity} ${savedFoods[i].measurementUnit}(s)`;
+      historyItem.classList.add("history-item");
+
+      foodResultsEl.appendChild(historyItem);
+    }
+  }
+  // Event Handler for saved foods buttons
+  $(document).on("click", ".history-item", function (event) {
+    event.preventDefault();
+    let selectedFood = $(event.target).text();
+    let clickedFood = selectedFood.split(", ");
+    let food = clickedFood[0];
+    let amount = Number(clickedFood[1].split(" ")[0]);
+    let measurementUnit = clickedFood[1].split(" ")[1];
+    let measure = measurementUnit.replace(/\(s\)/, "");
+
+    getFoodInfo(food, amount, measure);
+  });
 
   //Function to handle model window
   span.onclick = function () {
